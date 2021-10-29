@@ -1,0 +1,144 @@
+---SQL
+
+---Check the year of the data to ensure only 2021
+SELECT DISTINCT EXTRACT(YEAR FROM started_at) AS YEAR
+FROM `coursera-319703.bike_trip.all_trip` 
+
+---Check the month of the data to ensure only January - August
+SELECT DISTINCT EXTRACT(month FROM started_at) AS month
+FROM `coursera-319703.bike_trip.all_trip` 
+
+---Check month of data
+SELECT DISTINCT EXTRACT(month FROM started_at) AS month
+FROM `coursera-319703.bike_trip.RollingTripDuration` 
+
+---Total month with most rides
+SELECT EXTRACT(month FROM started_at) AS month, COUNT(*) AS num_of_rides
+FROM `coursera-319703.bike_trip.RollingTripDuration`
+GROUP BY month
+ORDER BY num_of_rides DESC
+
+---Total ride per day of week
+SELECT EXTRACT(DAYOFWEEK FROM started_at) AS day, COUNT(*) AS total_ride
+FROM `coursera-319703.bike_trip.all_trip` 
+GROUP BY EXTRACT(DAYOFWEEK FROM started_at)
+
+---Total ride per month
+SELECT EXTRACT(month FROM started_at) AS month, COUNT(*) AS num_of_rides
+FROM `coursera-319703.bike_trip.all_trip`
+GROUP BY month
+ORDER BY num_of_rides DESC
+
+---Create View table with duration
+CREATE VIEW coursera-319703.bike_trip.all_trip_duration AS
+SELECT *, DATETIME_DIFF(ended_at, started_at, MINUTE) AS duration_minutes
+FROM `coursera-319703.bike_trip.all_trip` 
+WHERE ended_at > started_at;
+
+---Check View Table
+SELECT *
+FROM `coursera-319703.bike_trip.RollingTripDuration` 
+ORDER BY started_at DESC 
+LIMIT 10
+
+---Average duration per month
+SELECT EXTRACT(month FROM started_at) AS month, AVG(duration_minutes)AS avgDur
+FROM `coursera-319703.bike_trip.RollingTripDuration` 
+GROUP BY month
+
+---Number of riders in as a member | casual rider
+SELECT COUNT(DISTINCT ride_id),member_casual
+FROM `coursera-319703.bike_trip.RollingTripDuration` 
+GROUP BY member_casual
+
+---Total duration per month
+SELECT EXTRACT(month FROM started_at) AS month, SUM(duration_minutes) AS totalDuration
+FROM `coursera-319703.bike_trip.RollingTripDuration` 
+GROUP BY month
+
+---Find the percentage of casual | member riders
+SELECT (COUNT(*)/3599803)*100 AS percentRiders,member_casual
+FROM `coursera-319703.bike_trip.all_trip_duration` 
+GROUP BY member_casual
+
+---Find the percentage of casual & members riders duration
+SELECT (SUM(duration_minutes)/84479047)*100 AS percentDuration,member_casual
+FROM `coursera-319703.bike_trip.all_trip_duration` 
+GROUP BY member_casual
+
+---Find the min & max duration minutes
+SELECT MIN(duration_minutes),MAX(duration_minutes)
+FROM `coursera-319703.bike_trip.RollingTripDuration` 
+GROUP BY member_casual
+
+
+---Create new view with time of day and day of week
+CREATE VIEW coursera-319703.bike_trip.all_trip_duration AS
+SELECT *, DATETIME_DIFF(ended_at, started_at, MINUTE) AS duration_minutes, CASE 
+                WHEN CAST(started_at as time) between '5:00:00.001' and '12:00:00.000' then 'Morning' 
+				WHEN CAST(started_at as time) between '12:00:00.001' and '17:00:00.000' then 'Afternoon' 
+				WHEN CAST(started_at as time) between '17:00:00.001' and '22:00:00.000' then 'Evening' 
+				ELSE 'Night' --only slot left is for night :)
+				END AS timeOfDay, CASE
+			WHEN EXTRACT(DAYOFWEEK FROM started_at) = 1 THEN 'Sunday'
+			WHEN EXTRACT(DAYOFWEEK FROM started_at) = 2 THEN 'Monday'
+			WHEN EXTRACT(DAYOFWEEK FROM started_at) = 3 THEN 'Tuesday'
+			WHEN EXTRACT(DAYOFWEEK FROM started_at) = 4 THEN 'Wednesday'
+			WHEN EXTRACT(DAYOFWEEK FROM started_at) = 5 THEN 'Thursday'
+			WHEN EXTRACT(DAYOFWEEK FROM started_at) = 6 THEN 'Friday'
+			ELSE  'Saturday'
+			END AS dayofweek
+FROM `coursera-319703.bike_trip.all_trip` 
+
+---Create view from new dataset
+SELECT *, CASE 
+                WHEN CAST(started_at as time) between '5:00:00.001' and '12:00:00.000' then 'Morning' 
+				WHEN CAST(started_at as time) between '12:00:00.001' and '17:00:00.000' then 'Afternoon' 
+				WHEN CAST(started_at as time) between '17:00:00.001' and '22:00:00.000' then 'Evening' 
+				ELSE 'Night' 
+				END AS timeOfDay
+FROM `coursera-319703.bike_trip.all_trips_second`
+
+---Top 20 for the most started station
+SELECT start_station_name, COUNT(*) as totalTrips
+FROM `coursera-319703.bike_trip.all_trips_second` 
+WHERE member_casual LIKE '%casual%'
+AND start_station_name != 'NA'
+GROUP BY start_station_name
+ORDER BY totalTrips DESC
+LIMIT 20
+
+---Top 20 for the longest duration trip start station
+SELECT start_station_name, SUM(ride_length_hour) as totalHour
+FROM `coursera-319703.bike_trip.all_trips_second` 
+WHERE member_casual LIKE '%casual%'
+AND start_station_name != 'NA'
+GROUP BY start_station_name
+ORDER BY totalHour DESC
+LIMIT 20
+
+---Count the number of member by user type used the bike
+SELECT COUNT(*),member_casual
+FROM `coursera-319703.bike_trip.all_trips_second` 
+GROUP BY member_casual
+
+---Find the total duration overall
+SELECT SUM(duration_minutes)
+FROM `coursera-319703.bike_trip.RollingTripDuration` 
+
+---Find out the percentage of trips by user type
+SELECT (COUNT(*)/3599803)*100 AS percentRiders,member_casual
+FROM `coursera-319703.bike_trip.RollingTripDuration` 
+GROUP BY member_casual
+
+---Find out the percentage of duration by user type
+SELECT (SUM(duration_minutes)/84479047)*100 AS percentDuration,member_casual
+FROM `coursera-319703.bike_trip.all_trips_second` 
+GROUP BY member_casual
+
+---Find minimum, maximum and mean of duration byb user type
+SELECT MIN(duration_minutes),MAX(duration_minutes), AVG(duration_minutes)
+FROM `coursera-319703.bike_trip.all_trips_second` 
+GROUP BY member_casual
+
+
