@@ -15,3 +15,6 @@ Insights:
 4. We can see that July has the highest duration the bike being used and february with the lowest.
 5. We found that more people are using the bike on the evening with the least at night.
 6. We can see an increasing trend at 5am till 5pm where people are using the bikes.
+
+Github (https://github.com/NevilleJeffree/bike-share-analysis)
+Tableau (https://public.tableau.com/views/BikeSharingAnalysis_16354888326220/Dashboard1?:language=en-US&:display_count=n&:origin=viz_share_link)
