@@ -3,7 +3,7 @@ Analysis of rider's behaviour in San Francisco  Bay Area
 
 Tools used:
 1. SQL (Google Cloud BigQuery)
-2. R Language (tidyverse, lubridate, ggplot2)
+2. R Language (tidyverse, lubridate, ggplot2, here, skimr, janitor, dplyr)
 3. Tableau (Data Visualisation)
 
 ![Dashboard 1](https://user-images.githubusercontent.com/32995833/151298202-ac2d4233-1b98-49a5-97fc-6a67fa785975.png)
